@@ -21,6 +21,15 @@
  */
 #pragma once
 
+#define CONFIG_EXAMPLES_DIR "AnyCubic/i3 Mega"
+
+#define I3MEGA_HAS_BLTOUCH
+#define KNUTWURST_BLTOUCH
+
+#define I3MEGA_HAS_TMC2208
+#define KNUTWURST_TMC
+//#define I3MEGA_HAS_TMC2226_E0
+
 /**
  * Configuration.h
  *
@@ -136,7 +145,7 @@
 // @section info
 
 // Author info of this build printed to the host during boot and M115
-#define STRING_CONFIG_H_AUTHOR "(knutwurst)" // Who made the changes.
+#define STRING_CONFIG_H_AUTHOR "(khaos)" // Who made the changes.
 // #define CUSTOM_VERSION_FILE Version.h // Path from the root directory (no quotes)
 
 /**
@@ -162,9 +171,9 @@
 // @section machine
 
 // Choose the name from boards.h that matches your setup
-#ifndef MOTHERBOARD
-  #define MOTHERBOARD BOARD_RAMPS_14_EFB
-#endif
+// #ifndef MOTHERBOARD
+//   #define MOTHERBOARD BOARD_RAMPS_14_EFB
+// #endif
 
 /**
  * Select the serial port on the board to use for communication with the host.
@@ -225,12 +234,35 @@
 // Enable the Bluetooth serial interface on AT90USB devices
 // #define BLUETOOTH
 
+/**
+ * Select your version of the Trigorilla (RAMPS1.4) board here.
+ *
+ * 0 = Default Trigorilla
+ * 1 = Newer Trigorilla v1.1 (first seen late 2018)
+ *
+ * The only major difference is a slight change on the servo pin mapping.
+ * This setting only is relevant if you want to use BLtouch or similar
+ * mods to be used via servo pins.
+ * The new version is to be identified by a "TRIGORILLA1.1" lettering
+ * on the upper left of the PCB silkscreen.
+ */
+#define TRIGORILLA_VERSION 1
+
+// Choose the name from boards.h that matches your setup
+#if TRIGORILLA_VERSION == 1
+  #define MOTHERBOARD BOARD_TRIGORILLA_14_11
+#else
+  #define MOTHERBOARD BOARD_TRIGORILLA_14
+#endif
+
+#define ANYCUBIC_I3MEGA
+
 // Name displayed in the LCD "Ready" message and Info menu
-// #define CUSTOM_MACHINE_NAME "3D Printer"
+#define CUSTOM_MACHINE_NAME "Anycubic i3"
 
 // Printer's unique ID, used by some programs to differentiate between machines.
 // Choose your own or use a service like https://www.uuidgenerator.net/version4
-// #define MACHINE_UUID "00000000-0000-0000-0000-000000000000"
+#define MACHINE_UUID "a6ef8f97-f1c4-4630-8c82-d6b2ac73c100"
 
 // @section stepper drivers
 
@@ -655,7 +687,7 @@
 #if ENABLED(KNUTWURST_4MAXP2)
   #define TEMP_SENSOR_0 11
 #else
-  #define TEMP_SENSOR_0 1
+  #define TEMP_SENSOR_0 5
 #endif
 #define TEMP_SENSOR_1 0
 #define TEMP_SENSOR_2 0
@@ -992,7 +1024,7 @@
  * Note: For Bowden Extruders make this large enough to allow load/unload.
  */
 #define PREVENT_LENGTHY_EXTRUDE
-#define EXTRUDE_MAXLENGTH 600
+#define EXTRUDE_MAXLENGTH 1000
 
 // ===========================================================================
 // ======================== Thermal Runaway Protection =======================
@@ -1203,7 +1235,7 @@
 // #define USE_VMIN_PLUG
 // #define USE_WMIN_PLUG
 #if DISABLED(KNUTWURST_ONE_Z_ENDSTOP)
-  #define USE_XMAX_PLUG
+  #define USE_XMAX_PLUG   // used as the second z stepper end limit switch
 #endif
 // #define USE_YMAX_PLUG
 #if ENABLED(KNUTWURST_CHIRON)
@@ -1283,14 +1315,14 @@
   #define W_MIN_ENDSTOP_INVERTING false // Set to true to invert the logic of the endstop.
   #define X_MAX_ENDSTOP_INVERTING true  // Set to true to invert the logic of the endstop.
   #define Y_MAX_ENDSTOP_INVERTING true  // Set to true to invert the logic of the endstop.
-  #define Z_MAX_ENDSTOP_INVERTING false // Set to true to invert the logic of the endstop.
+  #define Z_MAX_ENDSTOP_INVERTING true // Set to true to invert the logic of the endstop.
   #define I_MAX_ENDSTOP_INVERTING false // Set to true to invert the logic of the endstop.
   #define J_MAX_ENDSTOP_INVERTING false // Set to true to invert the logic of the endstop.
   #define K_MAX_ENDSTOP_INVERTING false // Set to true to invert the logic of the endstop.
   #define U_MAX_ENDSTOP_INVERTING false // Set to true to invert the logic of the endstop.
   #define V_MAX_ENDSTOP_INVERTING false // Set to true to invert the logic of the endstop.
   #define W_MAX_ENDSTOP_INVERTING false // Set to true to invert the logic of the endstop.
-  #define Z_MIN_PROBE_ENDSTOP_INVERTING false // Set to true to invert the logic of the probe.
+  #define Z_MIN_PROBE_ENDSTOP_INVERTING DISABLED(I3MEGA_HAS_BLTOUCH) // Set to true to invert the logic of the probe.
 #elif ENABLED(KNUTWURST_MEGA_X)
   #define X_MIN_ENDSTOP_INVERTING true  // Set to true to invert the logic of the endstop.
   #define Y_MIN_ENDSTOP_INVERTING false // Set to true to invert the logic of the endstop.
@@ -1844,7 +1876,7 @@
  *     O-- FRONT --+
  */
 #if ENABLED(KNUTWURST_BLTOUCH)
-  #define NOZZLE_TO_PROBE_OFFSET { -2, -25, -0.4 } // https://www.thingiverse.com/thing:2824005
+  #define NOZZLE_TO_PROBE_OFFSET {  27.75, +5, -0.4 } // https://www.thingiverse.com/thing:2023947
   // #define NOZZLE_TO_PROBE_OFFSET { 29, -15, 0 } //X-Carriage
 #endif
 
@@ -2125,8 +2157,8 @@
   #if ANY(KNUTWURST_MEGA, KNUTWURST_MEGA_S, KNUTWURST_MEGA_X)
     // Invert the stepper direction. Change (or reverse the motor connector) if an axis goes the wrong way.
     #define INVERT_X_DIR false // set to true for stock drivers or TMC2208 with reversed connectors
-    #define INVERT_Y_DIR true // set to false for stock drivers or TMC2208 with reversed connectors
-    #define INVERT_Z_DIR true // set to false for stock drivers or TMC2208 with reversed connectors
+    #define INVERT_Y_DIR false // set to false for stock drivers or TMC2208 with reversed connectors
+    #define INVERT_Z_DIR false // set to false for stock drivers or TMC2208 with reversed connectors
 
     // @section extruder
 
@@ -2134,10 +2166,10 @@
     #if ENABLED(KNUTWURST_BMG)
       #define INVERT_E0_DIR false // set to false for stock drivers or TMC2208 with reversed connectors
     #else
-      #define INVERT_E0_DIR true // set to false for stock drivers or TMC2208 with reversed connectors
+      #define INVERT_E0_DIR false // set to false for stock drivers or TMC2208 with reversed connectors
     #endif
 
-    #define INVERT_E1_DIR true // set to false for stock drivers or TMC2208 with reversed connectors
+    #define INVERT_E1_DIR false // set to false for stock drivers or TMC2208 with reversed connectors
     #define INVERT_E2_DIR false
     #define INVERT_E3_DIR false
     #define INVERT_E4_DIR false
@@ -2380,12 +2412,12 @@
  * RAMPS-based boards use SERVO3_PIN for the first runout sensor.
  * For other boards you may need to define FIL_RUNOUT_PIN, FIL_RUNOUT2_PIN, etc.
  */
-// #define FILAMENT_RUNOUT_SENSOR
+#define FILAMENT_RUNOUT_SENSOR
 #if ENABLED(FILAMENT_RUNOUT_SENSOR)
   #define FIL_RUNOUT_ENABLED_DEFAULT true // Enable the sensor on startup. Override with M412 followed by M500.
   #define NUM_RUNOUT_SENSORS   1          // Number of sensors, up to one per extruder. Define a FIL_RUNOUT#_PIN for each.
 
-  #define FIL_RUNOUT_STATE     LOW        // Pin state indicating that filament is NOT present.
+  #define FIL_RUNOUT_STATE     HIGH        // Pin state indicating that filament is NOT present.
   #define FIL_RUNOUT_PULLUP               // Use internal pullup for filament runout pins.
   // #define FIL_RUNOUT_PULLDOWN           // Use internal pulldown for filament runout pins.
   // #define WATCH_ALL_RUNOUT_SENSORS      // Execute runout script on any triggering sensor, not only for the active extruder.
@@ -2818,7 +2850,7 @@
 #define EEPROM_SETTINGS     // Persistent storage with M500 and M501
 // #define DISABLE_M503        // Saves ~2700 bytes of flash. Disable for release!
 #define EEPROM_CHITCHAT       // Give feedback on EEPROM commands. Disable to save PROGMEM.
-// #define EEPROM_BOOT_SILENT  // Keep M503 quiet and only give errors during first load
+#define EEPROM_BOOT_SILENT  // Keep M503 quiet and only give errors during first load
 #if ENABLED(EEPROM_SETTINGS)
   #define EEPROM_AUTO_INIT  // Init EEPROM automatically on any errors.
   // #define EEPROM_INIT_NOW   // Init EEPROM on first boot after a new build.
@@ -2854,7 +2886,7 @@
 // Preheat Constants - Up to 10 are supported without changes
 //
 #define PREHEAT_1_LABEL       "PLA"
-#define PREHEAT_1_TEMP_HOTEND 180
+#define PREHEAT_1_TEMP_HOTEND 190
 #define PREHEAT_1_TEMP_BED     70
 // #define PREHEAT_1_TEMP_CHAMBER 35
 #define PREHEAT_1_FAN_SPEED     0 // Value from 0 to 255
@@ -3642,11 +3674,12 @@
 //
 // Touch-screen LCD for Anycubic printers
 //
-// #define ANYCUBIC_LCD_I3MEGA
+#define ANYCUBIC_LCD_I3MEGA
 // #define ANYCUBIC_LCD_CHIRON
 #if EITHER(ANYCUBIC_LCD_I3MEGA, ANYCUBIC_LCD_CHIRON)
   // #define ANYCUBIC_LCD_DEBUG
   // #define ANYCUBIC_LCD_GCODE_EXT  // Add ".gcode" to menu entries for DGUS clone compatibility
+  #define LCD_SERIAL_PORT 3  // Default is 3 for Anycubic
 #endif
 
 //
@@ -3658,7 +3691,7 @@
 // Third-party or vendor-customized controller interfaces.
 // Sources should be installed in 'src/lcd/extui'.
 //
-// #define EXTENSIBLE_UI
+#define EXTENSIBLE_UI
 
 #if ENABLED(EXTENSIBLE_UI)
   // #define EXTUI_LOCAL_BEEPER // Enables use of local Beeper pin with external display
